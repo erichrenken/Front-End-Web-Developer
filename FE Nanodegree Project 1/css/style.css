@@ -1,0 +1,28 @@
+body {
+	font-family: 'Lato', sans-serif;
+	color: hsla(0,0%,38%,1.00);
+	font-weight: 300;
+}
+
+img {
+ -moz-border-radius-topleft:40px;
+ -moz-border-radius-topright:40px;
+ -moz-border-radius-bottomright:40px;
+ -moz-border-radius-bottomleft:40px;
+ -webkit-border-top-left-radius:40px;
+ -webkit-border-top-right-radius:40px;
+ -webkit-border-bottom-right-radius:40px;
+ -webkit-border-bottom-left-radius:40px;
+}
+
+.text-muted {
+	color: hsla(0,0%,71%,1.00);
+}
+
+.text-thin {
+	font-weight: 100;
+}
+
+.image-hand {
+	cursor: pointer;
+}
