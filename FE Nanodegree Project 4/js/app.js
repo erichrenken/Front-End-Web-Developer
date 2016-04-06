@@ -34,7 +34,7 @@ Enemy.prototype.update = function(dt) {
     // to an enemy. If so, the player is moved back to the starting
     // position and the score is reset.
     if ((Math.pow(this.x - player.x, 2) < 6000) && (Math.pow(this.y - player.y, 2) < 3000)){
-        resetPlayer();
+        player.resetPlayer();
         score = 0;
         updateScore();
     }
@@ -57,7 +57,7 @@ var Player = function() {
 // player's score is incremented
 Player.prototype.update = function(){
     if (this.y < 0){ 
-        resetPlayer();
+        player.resetPlayer();
         score++;
         updateScore();
     }
@@ -66,6 +66,12 @@ Player.prototype.update = function(){
 // Draw the player on the screen, required method for game 
 Player.prototype.render = function(){
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
+
+// Reset the player back to the original position
+Player.prototype.resetPlayer = function(){
+    this.x = 200;
+    this.y = 400;
 }
 
 // This function handles updating the x,y coordinates of the
@@ -129,12 +135,6 @@ function updateScore(){
         highScore = score;
     }
     document.getElementById("gameScore").innerHTML = "Score: " + score + "<br>High Score: " + highScore;
-}
-
-// This function moves the player back to the starting position
-function resetPlayer(){
-    player.x = 200;
-    player.y = 400;
 }
 
 // This function handles randomly assigning an anemy to one of the three
