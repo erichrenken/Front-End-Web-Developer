@@ -5,6 +5,10 @@ var allEnemies = [];
 var score = 0;
 var highScore = 0;
 
+// Constants for determining how far the player should move
+var TILE_WIDTH = 101,
+    TILE_HEIGHT = 83;
+
 var Enemy = function(speed) {
     // Added 'speed' as a parameter so that the bugs
     // would travel at random speeds
@@ -24,20 +28,26 @@ Enemy.prototype.update = function(dt) {
 
     // Once an enemy has gone off the screen, it is reset back
     // to the left and the speed and lane are randomly generated
-    if (this.x > 500){
-        this.y = determineLane();
-        this.x = -100;
-        this.speed = determineSpeed();
+    if (this.x > 500) {
+        this.reset();
     }
 
     // This equation determines if the player has come too close
     // to an enemy. If so, the player is moved back to the starting
     // position and the score is reset.
-    if ((Math.pow(this.x - player.x, 2) < 6000) && (Math.pow(this.y - player.y, 2) < 3000)){
-        player.resetPlayer();
+    if ((Math.pow(this.x - player.x, 2) < 6000) && (Math.pow(this.y - player.y, 2) < 3000)) {
+        player.reset();
         score = 0;
         updateScore();
     }
+};
+
+// Function for calling helper functions to determine lane and speed
+// Also resets enemy to left of canvas  
+Enemy.prototype.reset = function() {
+    this.y = determineLane();
+    this.x = -100;
+    this.speed = determineSpeed();
 };
 
 // Draw the enemy on the screen, required method for game
@@ -55,66 +65,64 @@ var Player = function() {
 // Checks to see if the player has reached the water. If so, 
 // the player is placed back in the starting position and the 
 // player's score is incremented
-Player.prototype.update = function(){
-    if (this.y < 0){ 
-        player.resetPlayer();
+Player.prototype.update = function() {
+    if (this.y < 0) {
+        this.reset();
         score++;
         updateScore();
     }
 };
 
 // Draw the player on the screen, required method for game 
-Player.prototype.render = function(){
+Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-}
+};
 
 // Reset the player back to the original position
-Player.prototype.resetPlayer = function(){
+Player.prototype.reset = function() {
     this.x = 200;
     this.y = 400;
-}
+};
 
 // This function handles updating the x,y coordinates of the
 // player based on the arrow key depressed
-Player.prototype.handleInput = function(key){ 
-    switch (key){
+Player.prototype.handleInput = function(key) {
+    switch (key) {
         case 'up':
-            if (this.y > 0){
-                this.y -= 85;
+            if (this.y > 0) {
+                this.y -= TILE_HEIGHT;
             }
             break;
         case 'down':
-            if (this.y < 400){
-                this.y += 85;
+            if (this.y < 400) {
+                this.y += TILE_HEIGHT;
             }
             break;
         case 'left':
-            if (this.x > 0){
-                this.x -= 100;
+            if (this.x > 0) {
+                this.x -= TILE_WIDTH;
             }
             break;
         case 'right':
-            if (this.x < 400){
-                this.x += 100;
+            if (this.x < 400) {
+                this.x += TILE_WIDTH;
             }
             break;
     }
     console.log(key);
     this.render();
-}
+};
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 
 var player = new Player();
-allEnemies.push(new Enemy(determineSpeed()));
-allEnemies.push(new Enemy(determineSpeed()));
-allEnemies.push(new Enemy(determineSpeed()));
-allEnemies.push(new Enemy(determineSpeed()));
-allEnemies.push(new Enemy(determineSpeed()));
-allEnemies.push(new Enemy(determineSpeed()));
 
+// Loop for creating six enemies
+for (i = 0; i < 6; i++) {
+    allEnemies.push(new Enemy(determineSpeed()));
+}
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
@@ -130,8 +138,8 @@ document.addEventListener('keyup', function(e) {
 });
 
 // This function handles updating the score and high score on the HTML page
-function updateScore(){
-    if (score > highScore){
+function updateScore() {
+    if (score > highScore) {
         highScore = score;
     }
     document.getElementById("gameScore").innerHTML = "Score: " + score + "<br>High Score: " + highScore;
@@ -139,9 +147,9 @@ function updateScore(){
 
 // This function handles randomly assigning an anemy to one of the three
 // available lanes.
-function determineLane(){
-    var randomInt = Math.floor( Math.random() * ( 3 ) ) + 1;
-    switch (randomInt){
+function determineLane() {
+    var randomInt = Math.floor(Math.random() * (3)) + 1;
+    switch (randomInt) {
         case 1:
             y = 50;
             break;
@@ -157,6 +165,6 @@ function determineLane(){
 
 // This function returns a random speed between 20-60
 // These numbers were arrived at after thorough testing
-function determineSpeed(){
+function determineSpeed() {
     return Math.floor(Math.random() * 60) + 20;
 }
