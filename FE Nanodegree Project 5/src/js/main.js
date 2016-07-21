@@ -3,15 +3,15 @@ var markers = [];
 var infoWin;
 
 function initMap() {
-    // TODO: use a constructor to create a new map JS object. You can use the coordinates
-    // we used, 40.7413549, -73.99802439999996 or your own!
+    // Create a map and center it in downtown Decatur
     map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 33.783083, lng: -84.298788}, zoom: 16
     });
 
-    //var largeInfowindow = new google.maps.InfoWindow();
+    // Create the bounds variable to be used when placing markers
     var bounds = new google.maps.LatLngBounds();
 
+    // Iterate through the observable array and create an array of markers
     for (i=0; i < ViewModel.Listings().length; i++){
         var marker = new google.maps.Marker({
             position: ViewModel.Listings()[i].address,
@@ -22,21 +22,25 @@ function initMap() {
         markers.push(marker);
         marker.setMap(map);
         bounds.extend(marker.position);
-        //console.log(i);
-        //marker.addListener('click', function() {
-        //    populateInfoWindow(this, largeInfowindow);
-        //});
     }
+    // Adjust the map to fit the markers
     map.fitBounds(bounds);
 }
 
+// This function is called after the Foursquare data is returned from the API so
+// that there is available data (telephone, URL, picture) retrived from Foursquare
+// to populate the InfoWindow
 function populateInfoWindow(marker, infowindow, index) {
+    // Close any instances of an InfoWindow previously opened. This prevents the
+    // map from opening multiple simultanous InfoWindows
     if (infoWin){
         infoWin.close();
     }
+    // Stop all previous animations.
     for( var i in markers ){
         markers[i].setAnimation(null);
     }
+    // Animate the selected marker
     marker.setAnimation(google.maps.Animation.BOUNCE);
 
     // Check to make sure the infowindow is not already opened on this marker
@@ -50,6 +54,7 @@ function populateInfoWindow(marker, infowindow, index) {
         });
         // Open the infowindow on the correct markers
         infowindow.open(map, marker);
+        // Add hardcoded data and data retrieved from Foursquare to the InfoWinfow
         infowindow.setContent('<div>' + marker.title + '</div><div><a href="' + ViewModel.Listings()[index].url + '" target="_blank">'+
             ViewModel.Listings()[index].url + '</a></div><br><div><image src="' +
             ViewModel.Listings()[index].pic + '"></image></div><br><div>' +
@@ -57,6 +62,8 @@ function populateInfoWindow(marker, infowindow, index) {
     }
 }
 
+// Create a Listing object from the hardcoded data with empty strings for the data
+// that will be retrieved from Foursquare
 var Listing = function(name, address, foursquareId){
     var self = this;
     self.name = name;
@@ -65,16 +72,22 @@ var Listing = function(name, address, foursquareId){
     self.url = "";
     self.pic = "";
     self.phone = "";
+    // This code ensures that the markers array and the observableArray stay synchronized
     self.openInfoWindow = function(listing){
         var index = markers.findIndex(x => x.title == listing.name);
         google.maps.event.trigger(markers[index], 'click');
     }
 };
 
+// This is the ViewModel that provides data access to the View
 var ListingModel = function(Listings){
     var self = this;
+    // Declare the search box as an observable
     self.userInput = ko.observable("");
+    // This observableArray holds the list of restaurants
     self.Listings = ko.observableArray(Listings);
+    // Loop through the Listings observableArray to retrieve data from Foursquare based on the hardcoded
+    // Foursquare ID
     for (i=0; i < Listings.length; i++){
         (function(index) {
             $.ajax({
@@ -94,6 +107,9 @@ var ListingModel = function(Listings){
                 });
         })(i);
     }
+    // The following code handles the filtering by using the search terms textbox
+    // If the characters in the textbox match any portion of the string containing
+    // the restaurant name, that restaurant remains in the list
     self.availableLocations = ko.computed(function(){
         return ko.utils.arrayFilter(self.Listings(), function(point){
             return point.name.toLowerCase().indexOf(self.userInput().toLowerCase()) >= 0;
@@ -110,6 +126,7 @@ var ListingModel = function(Listings){
     });
 };
 
+// Link the model to the ViewModel
 var ViewModel = new ListingModel([
     new Listing("Taqueria del Sol", {lat: 33.775916, lng: -84.30209710000003}, "49dfb321f964a52000611fe3"),
     new Listing("The Pinewood", {lat: 33.775363, lng: -84.299905}, "4fa5cb03e4b094b946a36158"),
@@ -119,5 +136,5 @@ var ViewModel = new ListingModel([
     new Listing("Souper Jenny", {lat: 33.775347, lng: -84.297062}, "52fd458f11d21705e752dd5f")
 ]);
 
-
+// Create the Model
 ko.applyBindings(ViewModel);
